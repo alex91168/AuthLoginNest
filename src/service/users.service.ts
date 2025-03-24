@@ -11,16 +11,14 @@ export class UsersService {
 
     constructor(
         @InjectRepository(User)
-        private readonly userRepo: Repository<User>
+        private readonly userRepo: Repository<User>,
     ){}
 
     async UserCreation(user: UserDto): Promise<any> {
-        let hashPassword: string; 
-        if(user.password === user.repassword){
-            hashPassword = await bcrypt.hash(user.password, 10);
-        } else {
+        if(user.password !== user.repassword){
             throw new Error("As senhas devem ser iguais");
         }
+        const hashPassword = await bcrypt.hash(user.password, 10);
         const createUser = this.userRepo.create({
             user: user.user,
             password: hashPassword,
