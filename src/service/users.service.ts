@@ -17,36 +17,53 @@ export class UsersService {
     ){}
 
     async UserCreation(user: UserDto): Promise<any> {
+        const userExists = await this.getAllUsers(user.user);
+        if(userExists) {
+            return {message: "Usuário já existente!"}
+        }
         if(user.password !== user.repassword){
-            throw new Error("As senhas devem ser iguais");
+            throw new Error("As senhas devem ser iguais!");
         }
         const hashPassword = await bcrypt.hash(user.password, 10);
         const createUser = this.userRepo.create({
             user: user.user,
             password: hashPassword,
-            email: user.email
+            email: user.email,
+            role: "USER"
         });
         await this.userRepo.save(createUser);
-        return { message: "Usuario criado com sucesso" }
+        return { message: "Usuário criado com sucesso" }
     }
 
     async UserLogin(userInfo: userLoginDto): Promise<any>{
         const userLogin = await this.userRepo.findOne({where: {user: userInfo.user}})
         if(!userLogin) {
-            return "User not found"
+            return "Usuário não encontrado!"
         }
         const matchPassword = await bcrypt.compare(userInfo.password, userLogin.password);
         if(!matchPassword){
-            return "Password not match"
+            return "As senhas devem ser iguais!"
         }
-        const payload = { sub: userLogin.id, username: userLogin.user };
+        const payload = { sub: userLogin.id, username: userLogin.user, role: userLogin.role };
         return { access_token: this.jwtService.sign(payload) };
     }
 
-    async getAllUsers():Promise<any>{
-        const users = await this.userRepo.find();
-        return users
+    async getAllUsers(user?: string):Promise<any>{
+        if(!user) {
+            return await this.userRepo.find();
+        } else {
+            let userExists = await this.userRepo.find({where: {user: user}})
+            if (userExists.length > 0){
+                return true
+            }
+            return false
+        }
     }
 
+
+    //////////
+    async deleteDB(){
+        await this.userRepo.delete({});
+    }
    
 }

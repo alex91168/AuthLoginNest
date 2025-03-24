@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
 
@@ -24,6 +24,13 @@ export class UserController {
   async getAllLogin(): Promise<any>{
     const response = this.user.getAllUsers();
     return response;
+  }
+
+  /////////////////////////
+  @Delete('deletar-banco-dados')
+  async deleteAll(): Promise<any> {
+    this.user.deleteDB();
+    return {message: "banco de dados deletado"}
   }
 
 }
