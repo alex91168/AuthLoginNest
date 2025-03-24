@@ -4,14 +4,16 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserDto, userLoginDto } from 'src/models/user';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class UsersService {
 
     constructor(
+        private jwtService: JwtService,
         @InjectRepository(User)
-        private readonly userRepo: Repository<User>,
+        private readonly userRepo: Repository<User>
     ){}
 
     async UserCreation(user: UserDto): Promise<any> {
@@ -37,7 +39,9 @@ export class UsersService {
         if(!matchPassword){
             return "Password not match"
         }
-        return {message: "Usuario logado", userLogin}
+        const payload = { sub: userLogin.id, username: userLogin.user };
+        return { access_token: this.jwtService.sign(payload) };
+        //return {message: "Usuario logado", userLogin}
     }
 
     async getAllUsers():Promise<any>{
