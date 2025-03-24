@@ -41,7 +41,6 @@ export class UsersService {
         }
         const payload = { sub: userLogin.id, username: userLogin.user };
         return { access_token: this.jwtService.sign(payload) };
-        //return {message: "Usuario logado", userLogin}
     }
 
     async getAllUsers():Promise<any>{
