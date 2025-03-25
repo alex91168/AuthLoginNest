@@ -28,4 +28,5 @@ export class AdminController {
       const response = await this.admin.promoteUser(userId);
       return response;
     }
+    
 }
