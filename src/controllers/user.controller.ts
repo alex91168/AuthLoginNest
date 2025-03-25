@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
+import { UserGuard } from 'src/guard/User.guard';
 
 @Controller()
 export class UserController {
@@ -10,8 +11,13 @@ export class UserController {
 
   @Post('create')
   async createUser(@Body() user: UserDto): Promise<any> {
-    const response = this.user.UserCreation(user);
-    return response;
+    try{
+      const response = this.user.UserCreation(user);
+      return response;
+
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   @Post('login')
@@ -27,6 +33,7 @@ export class UserController {
   }
 
   /////////////////////////
+  @UseGuards(UserGuard)
   @Delete('deletar-banco-dados')
   async deleteAll(): Promise<any> {
     this.user.deleteDB();

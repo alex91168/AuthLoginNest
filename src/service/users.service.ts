@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { JwtService } from '@nestjs/jwt';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 
 @Injectable()
@@ -17,6 +18,9 @@ export class UsersService {
     ){}
 
     async UserCreation(user: UserDto): Promise<any> {
+        if (user.user === undefined || user.email === undefined ) {
+            throw new Error("Formulario invalido");
+        }
         const userExists = await this.getAllUsers(user.user);
         if(userExists) {
             return {message: "Usuário já existente!"}
@@ -48,11 +52,12 @@ export class UsersService {
         return { access_token: this.jwtService.sign(payload) };
     }
 
-    async getAllUsers(user?: string):Promise<any>{
-        if(!user) {
+    async getAllUsers(user?: string):Promise<boolean | object>{
+        if(!user || user.length === 0) {
             return await this.userRepo.find();
         } else {
             let userExists = await this.userRepo.find({where: {user: user}})
+            console.log("Usuario encontrado", userExists);
             if (userExists.length > 0){
                 return true
             }
