@@ -6,6 +6,8 @@ export class User{
     @ObjectIdColumn()
     id: ObjectId;
     @Column()
+    userId: string;
+    @Column()
     user: string;
     @Column()
     password: string;

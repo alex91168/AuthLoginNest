@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
-import { UserGuard } from 'src/guard/User.guard';
+import { Response } from 'express';
 
 @Controller()
 export class UserController {
@@ -10,7 +10,7 @@ export class UserController {
    ) {}
 
   @Post('create')
-  async createUser(@Body() user: UserDto): Promise<any> {
+  async createUser(@Body() user: UserDto): Promise<{message: string}> {
     try{
       const response = this.user.UserCreation(user);
       return response;
@@ -21,23 +21,22 @@ export class UserController {
   }
 
   @Post('login')
-  async loginUser(@Body() userInfo: userLoginDto): Promise<any>{
-    const response = this.user.UserLogin(userInfo);
-    return response;
-  }
+  async loginUser(@Body() userInfo: userLoginDto, @Res() res: Response): Promise<any>{
+    const response = await this.user.UserLogin(userInfo);
 
-  @Get()
-  async getAllLogin(): Promise<any>{
-    const response = this.user.getAllUsers();
-    return response;
-  }
+    res.cookie('token', response.access_token, {
+      httpOnly: true,
+      secure: process.env.SECRET_JWT === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000,
+    })
+    res.cookie('userId', response.userId, {
+      httpOnly: false,
+      sameSite: 'strict',
+      maxAge: 3600000,
+    })
 
-  /////////////////////////
-  @UseGuards(UserGuard)
-  @Delete('deletar-banco-dados')
-  async deleteAll(): Promise<any> {
-    this.user.deleteDB();
-    return {message: "banco de dados deletado"}
+    return res.send(response); 
   }
 
 }

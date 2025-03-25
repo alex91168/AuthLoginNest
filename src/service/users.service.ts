@@ -5,30 +5,34 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { JwtService } from '@nestjs/jwt';
+import { AdminService } from './admin.service';
 
 
 @Injectable()
 export class UsersService {
 
     constructor(
-        private jwtService: JwtService,
+        private readonly adminService: AdminService,
+        private readonly jwtService: JwtService,
         @InjectRepository(User)
-        private readonly userRepo: Repository<User>
+        private readonly userRepo: Repository<User>,
     ){}
 
-    async UserCreation(user: UserDto): Promise<any> {
+    async UserCreation(user: UserDto): Promise<{message: string}> {
         if (user.user === undefined || user.email === undefined ) {
             throw new Error("Formulario invalido");
         }
-        const userExists = await this.getAllUsers(user.user);
+        const userExists = await this.adminService.getAllUsers(user.user);
         if(userExists) {
             throw new ConflictException('Nome de usuário já está em uso.');
         }
         if(user.password !== user.repassword){
             throw new BadRequestException('As senhas devem ser iguais!');
         }
+        const createId = Date.now().toString();
         const hashPassword = await bcrypt.hash(user.password, 10);
         const createUser = this.userRepo.create({
+            userId: createId,
             user: user.user,
             password: hashPassword,
             email: user.email,
@@ -48,25 +52,7 @@ export class UsersService {
             throw new BadRequestException('Senha incorreta!');
         }
         const payload = { sub: userLogin.id, username: userLogin.user, role: userLogin.role };
-        return { access_token: this.jwtService.sign(payload) };
-    }
-
-    async getAllUsers(user?: string):Promise<boolean | object>{
-        if(!user || user.length === 0) {
-            return await this.userRepo.find();
-        } else {
-            let userExists = await this.userRepo.find({where: {user: user}})
-            if (userExists.length > 0){
-                return true
-            }
-            return false
-        }
-    }
-
-
-    //////////
-    async deleteDB(){
-        await this.userRepo.delete({});
+        return { access_token: this.jwtService.sign(payload), userId: userLogin.userId };
     }
    
 }
