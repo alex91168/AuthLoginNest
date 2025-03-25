@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { JwtService } from '@nestjs/jwt';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 
 @Injectable()
@@ -23,10 +22,10 @@ export class UsersService {
         }
         const userExists = await this.getAllUsers(user.user);
         if(userExists) {
-            return {message: "Usuário já existente!"}
+            throw new ConflictException('Nome de usuário já está em uso.');
         }
         if(user.password !== user.repassword){
-            throw new Error("As senhas devem ser iguais!");
+            throw new BadRequestException('As senhas devem ser iguais!');
         }
         const hashPassword = await bcrypt.hash(user.password, 10);
         const createUser = this.userRepo.create({
@@ -42,11 +41,11 @@ export class UsersService {
     async UserLogin(userInfo: userLoginDto): Promise<any>{
         const userLogin = await this.userRepo.findOne({where: {user: userInfo.user}})
         if(!userLogin) {
-            return "Usuário não encontrado!"
+            return new BadRequestException('Usuário não encontrado.');
         }
         const matchPassword = await bcrypt.compare(userInfo.password, userLogin.password);
         if(!matchPassword){
-            return "As senhas devem ser iguais!"
+            throw new BadRequestException('Senha incorreta!');
         }
         const payload = { sub: userLogin.id, username: userLogin.user, role: userLogin.role };
         return { access_token: this.jwtService.sign(payload) };
@@ -57,7 +56,6 @@ export class UsersService {
             return await this.userRepo.find();
         } else {
             let userExists = await this.userRepo.find({where: {user: user}})
-            console.log("Usuario encontrado", userExists);
             if (userExists.length > 0){
                 return true
             }
