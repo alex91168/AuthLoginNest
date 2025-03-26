@@ -31,12 +31,16 @@ export class UsersService {
         }
         const createId = Date.now().toString();
         const hashPassword = await bcrypt.hash(user.password, 10);
+        const payload = { sub: createId, username: user.user, status: "pending" };
+        const validationToken = this.jwtService.sign(payload, { expiresIn: '15m' });
         const createUser = this.userRepo.create({
             userId: createId,
             user: user.user,
             password: hashPassword,
             email: user.email,
-            role: "USER"
+            role: "USER",
+            status: "pending",
+            validationToken: validationToken
         });
         await this.userRepo.save(createUser);
         return { message: "Usuário criado com sucesso" }

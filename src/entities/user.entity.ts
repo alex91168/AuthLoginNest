@@ -15,6 +15,10 @@ export class User{
     email: string;
     @Column()
     role: string;
+    @Column()
+    status: string;
+    @Column()
+    validationToken? : string;
 }
 
 

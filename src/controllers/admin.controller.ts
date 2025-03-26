@@ -3,7 +3,7 @@ import { AdminAuth } from 'src/guard/Admin.guard';
 import { AdminService } from 'src/service/admin.service';
 
 @Controller('admin')
-@UseGuards(AdminAuth)
+//@UseGuards(AdminAuth)
 export class AdminController {
     constructor ( private admin: AdminService ){}
    
