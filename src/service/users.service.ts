@@ -44,8 +44,8 @@ export class UsersService {
         });
         await this.userRepo.save(createUser);
         const userDetails = { user: user.user, password: user.password };
-        const userLogin = await this.UserLogin(userDetails);
-        return { message: "Usuário criado com sucesso", userLogin };
+        //const userLogin = await this.UserLogin(userDetails);
+        return { message: "Usuário criado com sucesso", userDetails };
     }
 
     async UserLogin(userInfo: userLoginDto): Promise<any>{

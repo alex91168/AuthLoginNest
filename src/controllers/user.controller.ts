@@ -15,20 +15,7 @@ export class UserController {
   async createUser(@Body() user: UserDto, @Res() res: Response): Promise<any> {
     try{
       const response = await this.user.UserCreation(user);
-      res.cookie('token', response.userLogin.access_token, {
-        httpOnly: true,
-        secure: process.env.SECRET_JWT === 'production',
-        sameSite: 'strict',
-        maxAge: 3600000,
-      })
-      res.cookie('userId', response.userLogin.userId, {
-        httpOnly: false,
-        sameSite: 'strict',
-        maxAge: 3600000,
-      })
-
-      return res.send ({message: response.message, token: response.userLogin.access_token});
-
+      await this.loginUser(response.userDetails, res);
     } catch (err) {
       if (err instanceof ConflictException) return res.status(409).send({error: err.message});
       if (err instanceof BadRequestException) return res.status(400).send({error: err.message});
