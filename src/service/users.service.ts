@@ -18,7 +18,7 @@ export class UsersService {
         private readonly userRepo: Repository<User>,
     ){}
 
-    async UserCreation(user: UserDto): Promise<{message: string}> {
+    async UserCreation(user: UserDto): Promise<any> {
         if (user.user === undefined || user.email === undefined ) {
             throw new Error("Formulario invalido");
         }
@@ -43,7 +43,9 @@ export class UsersService {
             validationToken: validationToken
         });
         await this.userRepo.save(createUser);
-        return { message: "Usuário criado com sucesso" }
+        const userDetails = { user: user.user, password: user.password };
+        const userLogin = await this.UserLogin(userDetails);
+        return { message: "Usuário criado com sucesso", userLogin };
     }
 
     async UserLogin(userInfo: userLoginDto): Promise<any>{
@@ -55,7 +57,7 @@ export class UsersService {
         if(!matchPassword){
             throw new BadRequestException('Senha incorreta!');
         }
-        const payload = { sub: userLogin.id, username: userLogin.user, role: userLogin.role };
+        const payload = { sub: userLogin.id, username: userLogin.user, role: userLogin.role, status: userLogin.status };
         return { access_token: this.jwtService.sign(payload), userId: userLogin.userId };
     }
    

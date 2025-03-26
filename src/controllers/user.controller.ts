@@ -1,8 +1,9 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { Response } from 'express';
 import { UserGuard } from 'src/guard/User.guard';
+import { Status } from 'src/decorators/user/user.decorator';
 
 @Controller()
 export class UserController {
@@ -11,13 +12,28 @@ export class UserController {
    ) {}
 
   @Post('create')
-  async createUser(@Body() user: UserDto): Promise<{message: string}> {
+  async createUser(@Body() user: UserDto, @Res() res: Response): Promise<any> {
     try{
-      const response = this.user.UserCreation(user);
-      return response;
+      const response = await this.user.UserCreation(user);
+      if (response)
+      res.cookie('token', response.userLogin.access_token, {
+        httpOnly: true,
+        secure: process.env.SECRET_JWT === 'production',
+        sameSite: 'strict',
+        maxAge: 3600000,
+      })
+      res.cookie('userId', response.userLogin.userId, {
+        httpOnly: false,
+        sameSite: 'strict',
+        maxAge: 3600000,
+      })
+
+      return res.send ({message: response.message, token: response.userLogin.access_token});
 
     } catch (err) {
-      throw new Error(err);
+      if (err instanceof ConflictException) return res.status(409).send({error: err.message});
+      if (err instanceof BadRequestException) return res.status(400).send({error: err.message});
+      return res.status(500).send({error: err.message});
     }
   }
 
@@ -48,4 +64,16 @@ export class UserController {
     return res.send({message: 'Logout realizado com sucesso'});
   }
 
+  @UseGuards(UserGuard)
+  @Status('active')
+  @Get('auth/isUserAuth')
+  async checkUserAuth(): Promise<any> {
+    return {message: "Usuário autorizado."}
+  }
+
+  @UseGuards(UserGuard)
+  @Post('auth/authenticate/:token')
+  async authenticateUser(@Param('token') token: string): Promise<any> {
+
+  }
 }
