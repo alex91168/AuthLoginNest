@@ -30,7 +30,7 @@ export class UserGuard implements CanActivate {
           throw new ForbiddenException; 
         }
         if (userStatus && !userStatus.includes(payload.status)){
-          throw new UnauthorizedException("Usuário não está ativo.");
+          throw new UnauthorizedException("Usuário não tem permissão para acessar.");
         }
         request['user'] = payload;
       } catch (err){
