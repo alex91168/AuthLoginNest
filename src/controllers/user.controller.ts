@@ -15,7 +15,6 @@ export class UserController {
   async createUser(@Body() user: UserDto, @Res() res: Response): Promise<any> {
     try{
       const response = await this.user.UserCreation(user);
-      if (response)
       res.cookie('token', response.userLogin.access_token, {
         httpOnly: true,
         secure: process.env.SECRET_JWT === 'production',
