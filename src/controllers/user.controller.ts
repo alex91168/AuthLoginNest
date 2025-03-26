@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { Response } from 'express';
+import { UserGuard } from 'src/guard/User.guard';
 
 @Controller()
 export class UserController {
@@ -37,6 +38,14 @@ export class UserController {
     })
 
     return res.send(response); 
+  }
+  
+  @UseGuards(UserGuard)
+  @Post('logout')
+  async userLogout(@Res() res: Response): Promise<any> {
+    res.clearCookie('token');
+    res.clearCookie('userId');
+    return res.send({message: 'Logout realizado com sucesso'});
   }
 
 }
