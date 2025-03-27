@@ -67,24 +67,23 @@ export class UserController {
 
   @UseGuards(UserGuard)
   @Status('pending')
-  @Put('auth/authenticate/teste/:token') 
+  @Put('auth/authenticate/:token') 
   async authenticateUserEmail(@Param('token') token: string, @Req() req: Request, @Res() res: Response): Promise<any> {
-      const cookies = req.headers.cookie;
-      console.log("Token do parametro", token)
-      if (!cookies?.match("token=")) return res.status(400).send({error: "Token não encontrado."}) 
+    const cookies = req.headers.cookie;
+    if (!cookies?.match("token=")) return res.status(400).send({error: "Token não encontrado."}) 
 
-      const userToken = cookies?.split("token=")[1].split(";")[0];
-      console.log("Token do usuario", userToken)
-      const response = await this.user.authenticateUserEmail(token, userToken);
+    const userToken = cookies?.split("token=")[1].split(";")[0];
+    console.log("Token do usuario", userToken)
+    const response = await this.user.authenticateUserEmail(token, userToken);
 
-      res.cookie('token', response.access_token, {
-        httpOnly: true,
-        secure: process.env.SECRET_JWT === 'production',
-        sameSite: 'strict',
-        maxAge: 3600000,
-      })
-      
-      return res.send({message: response.message})
+    res.cookie('token', response.access_token, {
+      httpOnly: true,
+      secure: process.env.SECRET_JWT === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000,
+    })
+    
+    return res.send({message: response.message})
   }
 
 }

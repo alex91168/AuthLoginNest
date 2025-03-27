@@ -18,9 +18,7 @@ export class UserGuard implements CanActivate {
       ]);
       
       const request = context.switchToHttp().getRequest();
-      console.log(request) // Remover
       const token = this.extractToken(request);
-      console.log("Token do usuário:", token) // Remover
       if (!token) {throw new UnauthorizedException("Token de usuário invalido")} 
 
       try {
