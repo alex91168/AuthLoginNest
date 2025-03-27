@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, Param, Post, Put, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { UsersService } from '../service/users.service';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { Request, Response } from 'express';
@@ -73,7 +73,6 @@ export class UserController {
     if (!cookies?.match("token=")) return res.status(400).send({error: "Token não encontrado."}) 
 
     const userToken = cookies?.split("token=")[1].split(";")[0];
-    console.log("Token do usuario", userToken)
     const response = await this.user.authenticateUserEmail(token, userToken);
 
     res.cookie('token', response.access_token, {
@@ -86,4 +85,16 @@ export class UserController {
     return res.send({message: response.message})
   }
 
+  @UseGuards(UserGuard)
+  @Status('pending')
+  @Get('auth/request-new-token')
+  async requestNewToken(@Req() req: Request){
+    const cookies = req.headers.cookie;
+    if (!cookies?.match("token=")) return {message: "Token não foi encontrado"} 
+
+    const userToken = cookies?.split("token=")[1].split(";")[0];
+    const response = this.user.requestNewToken(userToken);
+    return response
+
+  }
 }

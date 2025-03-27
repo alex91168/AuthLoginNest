@@ -87,4 +87,16 @@ export class UsersService {
         }
     }
    
+    async requestNewToken (userToken: any): Promise<any> { //Criar token para UserCreation
+        const userInfos = await this.jwtService.verifyAsync(userToken, {secret: process.env.SECRET_JWT }); //Criar função para authenticateUserEmail Token
+        const payload = { userId: userInfos.userId, username: userInfos.username, status: "pending" }; //Não está passando username
+        const validationToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+
+        const user = await this.userRepo.findOne({where: {userId: userInfos.userId}});
+        if (!user) throw new BadRequestException("Usuário não encontrado.")
+        user.validationToken = validationToken;
+        console.log("Token de verificação de email:", validationToken); // Enviar para email
+        this.userRepo.save(user);
+        return { message: "Novo token gerado."}
+    }
 }
