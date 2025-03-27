@@ -27,10 +27,10 @@ export class UserGuard implements CanActivate {
           secret: process.env.SECRET_JWT
         });
         if (userRoles && !userRoles.includes(payload.role)){
-          throw new ForbiddenException; 
+          throw new ForbiddenException("Usuário não tem permissão para acessar."); 
         }
         if (userStatus && !userStatus.includes(payload.status)){
-          throw new UnauthorizedException("Usuário não tem permissão para acessar.");
+          throw new ForbiddenException("Usuário não ativou o email.");
         }
         request['user'] = payload;
       } catch (err){
