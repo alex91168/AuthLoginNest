@@ -18,9 +18,10 @@ export class UserGuard implements CanActivate {
       ]);
       
       const request = context.switchToHttp().getRequest();
+      console.log(request) // Remover
       const token = this.extractToken(request);
-
-      if (!token) {throw new UnauthorizedException}
+      console.log("Token do usuário:", token) // Remover
+      if (!token) {throw new UnauthorizedException("Token de usuário invalido")} 
 
       try {
         const payload = await this.jwtService.verifyAsync(token, {
