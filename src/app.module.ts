@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user.module';
 import { ConfigModule } from '@nestjs/config';
+import { EmailSenderModule } from './modules/email-sender.module';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { ConfigModule } from '@nestjs/config';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true
     }),
-    UserModule
+    UserModule, EmailSenderModule
   ]
 })
 export class AppModule {}

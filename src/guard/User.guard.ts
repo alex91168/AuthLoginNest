@@ -29,7 +29,10 @@ export class UserGuard implements CanActivate {
           throw new ForbiddenException("Usuário não tem permissão para acessar."); 
         }
         if (userStatus && !userStatus.includes(payload.status)){
-          throw new ForbiddenException("Usuário não ativou o email.");
+          if(payload.status === 'pending'){
+            throw new ForbiddenException("Usuário não ativou o email.");
+          }
+          throw new ForbiddenException("Usuário não tem permissão para acessar.");
         }
         request['user'] = payload;
       } catch (err){

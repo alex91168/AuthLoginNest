@@ -95,6 +95,5 @@ export class UserController {
     const userToken = cookies?.split("token=")[1].split(";")[0];
     const response = this.user.requestNewToken(userToken);
     return response
-
   }
 }

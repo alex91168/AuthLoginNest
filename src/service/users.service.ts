@@ -13,11 +13,11 @@ import { EmailSenderService } from './email-sender.service';
 export class UsersService {
 
     constructor(
-        private readonly emailSender: EmailSenderService,
         private readonly adminService: AdminService,
         private readonly jwtService: JwtService,
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
+        private readonly emailQueue: EmailSenderService
     ){}
 
     async UserCreation(user: UserDto): Promise<any> {
@@ -46,8 +46,9 @@ export class UsersService {
         });
         await this.userRepo.save(createUser);
         const userDetails = { user: user.user, password: user.password };
-        const sendEmail = await this.emailSender.sendEmail(validationToken, user.email); 
-        console.log("##########################", sendEmail);
+
+        await this.emailQueue.sendEmailQueue(user.email, validationToken); // Retornar 200 independente das tentativas falhas.
+
         return { message: "Usuário criado com sucesso", userDetails };
     }
 
@@ -92,14 +93,14 @@ export class UsersService {
    
     async requestNewToken (userToken: any): Promise<any> { //Criar token para UserCreation
         const userInfos = await this.jwtService.verifyAsync(userToken, {secret: process.env.SECRET_JWT }); //Criar função para authenticateUserEmail Token
-        const payload = { userId: userInfos.userId, username: userInfos.username, status: "pending" }; //Não está passando username
+        const payload = { userId: userInfos.userId, username: userInfos.username, status: "pending" };
         const validationToken = this.jwtService.sign(payload, { expiresIn: '15m' });
 
         const user = await this.userRepo.findOne({where: {userId: userInfos.userId}});
         if (!user) throw new BadRequestException("Usuário não encontrado.")
         user.validationToken = validationToken;
-        console.log("Token de verificação de email:", validationToken); // Enviar para email
         this.userRepo.save(user);
+        await this.emailQueue.sendEmailQueue(user.email, validationToken);
         return { message: "Novo token gerado."}
     }
 }
