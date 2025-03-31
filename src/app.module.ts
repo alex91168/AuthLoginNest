@@ -16,6 +16,6 @@ import { ConfigModule } from '@nestjs/config';
       synchronize: true
     }),
     UserModule
-  ],
+  ]
 })
 export class AppModule {}

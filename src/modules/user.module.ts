@@ -6,6 +6,7 @@ import { AdminController } from 'src/controllers/admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { User } from 'src/entities/user.entity';
 import { AdminService } from 'src/service/admin.service';
+import { EmailSenderService } from 'src/service/email-sender.service';
 import { UsersService } from 'src/service/users.service';
 
 @Module({
@@ -19,6 +20,6 @@ import { UsersService } from 'src/service/users.service';
         })
     ],
     controllers: [UserController, AdminController],
-    providers: [UsersService, AdminService],
+    providers: [UsersService, AdminService, EmailSenderService],
 })
 export class UserModule {}

@@ -6,12 +6,14 @@ import * as bcrypt from 'bcrypt';
 import { UserDto, userLoginDto } from 'src/models/user';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { AdminService } from './admin.service';
+import { EmailSenderService } from './email-sender.service';
 
 
 @Injectable()
 export class UsersService {
 
     constructor(
+        private readonly emailSender: EmailSenderService,
         private readonly adminService: AdminService,
         private readonly jwtService: JwtService,
         @InjectRepository(User)
@@ -44,7 +46,8 @@ export class UsersService {
         });
         await this.userRepo.save(createUser);
         const userDetails = { user: user.user, password: user.password };
-        console.log("##########################", validationToken) //Enviar para o email.
+        const sendEmail = await this.emailSender.sendEmail(validationToken, user.email); 
+        console.log("##########################", sendEmail);
         return { message: "Usuário criado com sucesso", userDetails };
     }
 
